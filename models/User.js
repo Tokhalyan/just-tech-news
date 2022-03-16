@@ -52,9 +52,9 @@ User.init(
                 return updatedUserData;
             }
         },
-        sequelize,
+        sequelize, // ?????
         timestamps: false,
-        freezeTableName: true,
+        freezeTableName: true, // ?????
         underscored: true,
         modelName: 'user'
     }
