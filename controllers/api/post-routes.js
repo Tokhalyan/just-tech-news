@@ -3,9 +3,7 @@ const { Post, User, Vote, Comment } = require('../../models');
 const sequelize = require('../../config/connection');
 
 router.get('/', (req, res) => {
-    console.log('===========================');
     Post.findAll({
-        order: [['created_at', 'DESC']],
         attributes: [
             'id',
             'post_url',
@@ -14,7 +12,6 @@ router.get('/', (req, res) => {
             [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
         ],
         include: [
-            // include the Comment model here:
             {
                 model: Comment,
                 attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
@@ -22,15 +19,23 @@ router.get('/', (req, res) => {
                     model: User,
                     attributes: ['username']
                 }
+            },
+            {
+                model: User,
+                attributes: ['username']
             }
         ]
     })
-        .then(dbPostData => res.json(dbPostData))
+        .then(dbPostData => {
+            const posts = dbPostData.map(post => post.get({ plain: true }));
+            // pass a single post object into the homepage template
+            res.render('homepage', { posts });
+        })
         .catch(err => {
             console.log(err);
             res.status(500).json(err);
-        })
-})
+        });
+});
 
 router.get('/:id', (req, res) => {
     Post.findOne({
